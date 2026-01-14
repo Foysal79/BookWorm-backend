@@ -4,6 +4,7 @@ import { BookRoutes } from "../modules/book/book.router";
 import { GenreRoutes } from "../modules/genre/genre.router";
 import { ReviewRoutes } from "../modules/review/review.router";
 import { UserLibraryRoutes } from "../modules/userLibrary/userLibrary.router";
+import { TutorialRoutes } from "../modules/tutorial/tutorial.router";
 
 const router = Router();
 const moduleRouter = [
@@ -27,6 +28,10 @@ const moduleRouter = [
   {
     path: "/user-library",
     route: UserLibraryRoutes,
+  },
+  {
+    path: "/tutorial",
+    route: TutorialRoutes,
   },
 ];
 moduleRouter.forEach((route) => router.use(route.path, route.route));
