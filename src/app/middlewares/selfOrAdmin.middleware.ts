@@ -12,6 +12,10 @@ const selfOrAdmin = () => {
     const isAdmin = req.user.role === "Admin";
     const isSelf = req.user.userId === requestedId;
 
+    // console.log("TOKEN userId:", req.user?.userId);
+    // console.log("PARAM id:", req.params.id);
+    // console.log("ROLE:", req.user?.role);
+
     if (!isAdmin && !isSelf) {
       return res.status(403).json({ success: false, message: "Forbidden" });
     }

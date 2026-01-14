@@ -11,6 +11,7 @@ router.post("/register", UserController.registerUser);
 router.post("/login", UserController.loginUser);
 
 // privet
+// get all user only admin
 router.get(
   "/",
   authMiddleware.auth(),
@@ -18,7 +19,12 @@ router.get(
   UserController.getAllUsers
 );
 
-router.get("/:id", authMiddleware.auth(), selfOrAdminMiddleware.selfOrAdmin());
+router.get(
+  "/:id",
+  authMiddleware.auth(),
+  selfOrAdminMiddleware.selfOrAdmin(),
+  UserController.getSingleUser
+);
 
 router.patch(
   "/:id",

@@ -17,26 +17,26 @@ const createUser = async (payload: TRegisterPayload) => {
   }
 };
 
-// login user
+//* login user
 const loginUser = async (payload: TLoginPayload) => {
   try {
     const user = await User.findOne({ email: payload.email }).select(
       "+password"
-);
+    );
     if (!user) throw new Error("Invalid credentials");
 
     const ok = await bcrypt.compare(payload.password, user.password);
     if (!ok) throw new Error("Invalid password");
 
     const token = jwt.sign(
-      { 
-        userId: String(user._id), 
-        role: user.role, 
-        email: user.email 
+      {
+        userId: String(user._id),
+        role: user.role,
+        email: user.email,
       },
       config.JWT_SECRET as string,
-      { 
-        expiresIn: "7d"
+      {
+        expiresIn: "7d",
       }
     );
 
@@ -48,19 +48,25 @@ const loginUser = async (payload: TLoginPayload) => {
   }
 };
 
-// get all user 
+//* get all user
 const getAllUsers = async () => {
-  try{
+  try {
     const user = User.find().sort({ createdAt: -1 });
     return user;
+  } catch (error) {
+    throw error;
   }
-  catch(error){
-     throw error;
-  }
-  
 };
+
+//* get Single User
+const getSingleUser = async (id: string) => {
+  const user = await User.findById(id);
+  return user;
+};
+
 export const UserService = {
   createUser,
   loginUser,
-  getAllUsers
+  getAllUsers,
+  getSingleUser,
 };
