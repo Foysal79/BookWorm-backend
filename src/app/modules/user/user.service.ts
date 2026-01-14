@@ -29,9 +29,15 @@ const loginUser = async (payload: TLoginPayload) => {
     if (!ok) throw new Error("Invalid password");
 
     const token = jwt.sign(
-      { userId: String(user._id), role: user.role, email: user.email },
+      { 
+        userId: String(user._id), 
+        role: user.role, 
+        email: user.email 
+      },
       config.JWT_SECRET as string,
-      { expiresIn: "7d" }
+      { 
+        expiresIn: "7d"
+      }
     );
 
     // password hide
