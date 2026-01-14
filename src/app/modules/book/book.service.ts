@@ -1,3 +1,5 @@
+import QueryBuilder from "../../utils/QueryBuilder";
+import { BookSearchableFields } from "./book.constant";
 import { Book } from "./book.model";
 
 const createBook = async (payload: any) => {
@@ -16,41 +18,36 @@ const createBook = async (payload: any) => {
   }
 };
 
-const getAllBooks = async (query: any) => {
-  try {
-    const filter: any = { isDeleted: false };
+const getAllBooks = async (query: Record<string, unknown>) => {
+  // base filter
+  const baseQuery = Book.find({ isDeleted: false }).populate("genre");
+  //Build query (search/filter/sort/pagination/fields)
+  const qb = new QueryBuilder(baseQuery, query)
+    .search(BookSearchableFields)
+    .filter()
+    .sort()
+    .Pagination()
+    .fields();
 
-    if (query.genre) {
-      filter.genre = query.genre;
-    }
+  const data = await qb.modelQuery;
 
-    if (query.search) {
-      filter.$or = [
-        { title: { $regex: query.search, $options: "i" } },
-        { author: { $regex: query.search, $options: "i" } },
-      ];
-    }
+  
+  const countBaseQuery = Book.find({ isDeleted: false });
+  const countQb = new QueryBuilder(countBaseQuery, query)
+    .search(BookSearchableFields)
+    .filter();
 
-    const page = Number(query.page) || 1;
-    const limit = Number(query.limit) || 10;
-    const skip = (page - 1) * limit;
+  const total = await Book.countDocuments(
+    (countQb.modelQuery as any).getFilter()
+  );
 
-    const [data, total] = await Promise.all([
-      Book.find(filter)
-        .populate("genre")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
-      Book.countDocuments(filter),
-    ]);
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
 
-    return {
-      meta: { page, limit, total },
-      data,
-    };
-  } catch (error) {
-    throw error;
-  }
+  return {
+    meta: { page, limit, total },
+    data,
+  };
 };
 
 const getSingleBookById = async (id: string) => {

@@ -75,7 +75,7 @@ const updateBook = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id as any)) {
       return res.status(400).json({
         success: false,
         message: "Invalid book id",
