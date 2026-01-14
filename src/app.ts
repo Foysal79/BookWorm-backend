@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import router from "./app/routes";
+import { globalErrorHandlerMiddleware } from "./app/middlewares/error.middleware";
 
 const app: Application = express();
 // parser
@@ -18,5 +19,5 @@ app.use("/api/v1", router);
 app.get("/", (req: Request, res: Response) => {
   res.send("welcome to BookWorm!");
 });
-
+app.use(globalErrorHandlerMiddleware.globalErrorHandler);
 export default app;

@@ -47,6 +47,16 @@ const loginUser = async (req: Request, res: Response) => {
 };
 
 
+//admin only (all user get)
+const getAllUsers = async (_req: AuthRequest, res: Response) => {
+  try {
+    const users = await UserService.getAllUsers();
+    return res.status(200).json({ success: true, data: users });
+  } catch (error: any) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 
 export const UserController = {
   registerUser,

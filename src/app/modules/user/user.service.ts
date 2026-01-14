@@ -17,6 +17,7 @@ const createUser = async (payload: TRegisterPayload) => {
   }
 };
 
+// login user
 const loginUser = async (payload: TLoginPayload) => {
   try {
     const user = await User.findOne({ email: payload.email }).select(
@@ -41,7 +42,19 @@ const loginUser = async (payload: TLoginPayload) => {
   }
 };
 
+// get all user 
+const getAllUsers = async () => {
+  try{
+    const user = User.find().sort({ createdAt: -1 });
+    return user;
+  }
+  catch(error){
+     throw error;
+  }
+  
+};
 export const UserService = {
   createUser,
   loginUser,
+  getAllUsers
 };
