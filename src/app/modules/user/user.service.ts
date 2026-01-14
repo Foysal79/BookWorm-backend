@@ -1,8 +1,15 @@
-import { IUser } from "./user.interface";
+import { IUser, TLoginPayload, TRegisterPayload } from "./user.interface";
 import { User } from "./user.model";
+import jwt from "jsonwebtoken";
+import * as bcrypt from "bcrypt";
+import config from "../../config";
 
-const createUser = async (payload: IUser) => {
+//* create new user
+const createUser = async (payload: TRegisterPayload) => {
   try {
+    const exists = await User.findOne({ email: payload.email });
+    if (exists) throw new Error("Email already exists");
+
     const user = await User.create(payload);
     return user;
   } catch (error) {
@@ -10,6 +17,31 @@ const createUser = async (payload: IUser) => {
   }
 };
 
+const loginUser = async (payload: TLoginPayload) => {
+  try {
+    const user = await User.findOne({ email: payload.email }).select(
+      "+password"
+);
+    if (!user) throw new Error("Invalid credentials");
+
+    const ok = await bcrypt.compare(payload.password, user.password);
+    if (!ok) throw new Error("Invalid password");
+
+    const token = jwt.sign(
+      { userId: String(user._id), role: user.role, email: user.email },
+      config.JWT_SECRET as string,
+      { expiresIn: "7d" }
+    );
+
+    // password hide
+    const safeUser = await User.findById(user._id);
+    return { user: safeUser, token };
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const UserService = {
   createUser,
+  loginUser,
 };

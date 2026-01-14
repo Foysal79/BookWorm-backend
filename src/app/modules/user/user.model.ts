@@ -14,7 +14,7 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       required: true,
-      select: 0,
+      select: false,
     },
     role: {
       type: String,
@@ -28,4 +28,4 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
-export const User = mongoose.model<IUser>('User', userSchema);
+export const User = mongoose.model<IUser>("User", userSchema);
