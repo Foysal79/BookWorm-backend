@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Review } from "./review.model";
 
 const createReview = async (payload: any) => {
@@ -21,15 +22,21 @@ const getApprovedByBook = async (bookId: string) => {
 };
 
 const approveReview = async (id: string) => {
-  try {
-    return await Review.findOneAndUpdate(
-      { _id: id, isDeleted: false },
-      { status: "approved" },
-      { new: true }
-    );
-  } catch (err) {
-    throw err;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid review id");
   }
+
+  const updated = await Review.findOneAndUpdate(
+    { _id: new mongoose.Types.ObjectId(id), isDeleted: { $ne: true } },
+    { status: "approved" },
+    { new: true }
+  );
+
+  if (!updated) {
+    throw new Error("Review not found or deleted");
+  }
+
+  return updated;
 };
 
 export const ReviewService = {
