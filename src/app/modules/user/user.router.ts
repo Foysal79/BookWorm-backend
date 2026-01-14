@@ -36,7 +36,8 @@ router.patch(
 router.delete(
   "/:id",
   authMiddleware.auth(),
-  roleBaseMiddleware.requireRole("Admin")
+  roleBaseMiddleware.requireRole("Admin"),
+  UserController.deleteUser
 );
 
 export const UserRoutes = router;

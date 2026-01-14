@@ -66,17 +66,25 @@ const getSingleUser = async (id: string) => {
 
 //* only role update
 const updateUserRole = async (id: string, role: TRole) => {
-  try{
-    const user =  User.findOneAndUpdate(
-    { _id: id, isDeleted: false }, // deleted user update হবে না
-    { role },
-    { new: true, runValidators: true }
-  )
-  return user;
-  } catch(error)
-  {
+  try {
+    const user = User.findOneAndUpdate(
+      { _id: id, isDeleted: false }, 
+      { role },
+      { new: true, runValidators: true }
+    );
+    return user;
+  } catch (error) {
     throw error;
   }
+};
+
+//* soft delete only
+const softDeleteUser = async (id: string) => {
+  return User.findOneAndUpdate(
+    { _id: id, isDeleted: false }, 
+    { isDeleted: true },
+    { new: true }
+  );
 };
 
 export const UserService = {
@@ -84,5 +92,6 @@ export const UserService = {
   loginUser,
   getAllUsers,
   getSingleUser,
-  updateUserRole
+  updateUserRole,
+  softDeleteUser,
 };

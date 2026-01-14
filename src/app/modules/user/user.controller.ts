@@ -85,23 +85,40 @@ const getSingleUser = async (req: Request, res: Response) => {
 
 const updateUserRole = async (req: Request, res: Response) => {
   const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id as any)) {
+    return res.status(400).json({ success: false, message: "Invalid user id" });
+  }
+  const { body } = userValidation.updateRoleSchema.parse({ body: req.body });
+  const updated = await UserService.updateUserRole(id as any, body.role);
+  if (!updated) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+  return res.status(200).json({
+    success: true,
+    message: "User role updated",
+    data: updated,
+  });
+};
+
+
+//* soft delete (isDeleted = true)
+const deleteUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id as any)) {
     return res.status(400).json({ success: false, message: "Invalid user id" });
   }
 
-  const { body } = userValidation.updateRoleSchema.parse({ body: req.body });
+  const deleted = await UserService.softDeleteUser(id as any);
 
-  const updated = await UserService.updateUserRole(id as any, body.role);
-
-  if (!updated) {
+  if (!deleted) {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
   return res.status(200).json({
     success: true,
-    message: "User role updated",
-    data: updated,
+    message: "User deleted (soft)",
+    data: deleted,
   });
 };
 
@@ -110,5 +127,6 @@ export const UserController = {
   loginUser,
   getAllUsers,
   getSingleUser,
-  updateUserRole
+  updateUserRole,
+  deleteUser
 };
