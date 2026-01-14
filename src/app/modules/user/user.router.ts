@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { UserController } from "./user.controller";
 import { selfOrAdminMiddleware } from "../../middlewares/selfOrAdmin.middleware";
-import { selfOrAdminMiddleware } from "./../../middlewares/selfOrAdmin.middleware";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { roleBaseMiddleware } from "../../middlewares/role.middleware";
 
