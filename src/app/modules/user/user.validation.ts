@@ -5,7 +5,7 @@ const registerSchema = z.object({
     name: z.string().min(3, "Name too short"),
     email: z.string().email().email("Please provide a valid email address."),
     password: z.string().min(6, "Password must be 6+ chars"),
-    photoUrl: z.string().url().optional(),
+    img: z.string().url().optional(),
   }),
 });
 

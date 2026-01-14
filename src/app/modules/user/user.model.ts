@@ -6,6 +6,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
     },
+    img: {
+      type: String,
+      required : true,
+    },
     email: {
       type: String,
       required: true,
@@ -32,6 +36,5 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
-
 
 export const User = mongoose.model<IUser>("User", userSchema);
