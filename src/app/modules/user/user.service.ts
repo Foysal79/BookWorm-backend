@@ -51,7 +51,7 @@ const loginUser = async (payload: TLoginPayload) => {
 //* get all user
 const getAllUsers = async () => {
   try {
-    const user = User.find().sort({ createdAt: -1 });
+    const user = User.find({ isDeleted: false }).sort({ createdAt: -1 });
     return user;
   } catch (error) {
     throw error;
@@ -64,9 +64,25 @@ const getSingleUser = async (id: string) => {
   return user;
 };
 
+//* only role update
+const updateUserRole = async (id: string, role: TRole) => {
+  try{
+    const user =  User.findOneAndUpdate(
+    { _id: id, isDeleted: false }, // deleted user update হবে না
+    { role },
+    { new: true, runValidators: true }
+  )
+  return user;
+  } catch(error)
+  {
+    throw error;
+  }
+};
+
 export const UserService = {
   createUser,
   loginUser,
   getAllUsers,
   getSingleUser,
+  updateUserRole
 };

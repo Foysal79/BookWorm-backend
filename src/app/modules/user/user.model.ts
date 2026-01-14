@@ -21,6 +21,10 @@ const userSchema = new Schema<IUser>(
       enum: ["Admin", "User"],
       default: "User",
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     isVerified: {
       type: Boolean,
       default: false,
@@ -28,4 +32,6 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
+
+
 export const User = mongoose.model<IUser>("User", userSchema);

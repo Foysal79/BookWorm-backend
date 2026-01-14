@@ -18,7 +18,7 @@ router.get(
   roleBaseMiddleware.requireRole("Admin"),
   UserController.getAllUsers
 );
-
+// get single user
 router.get(
   "/:id",
   authMiddleware.auth(),
@@ -29,7 +29,8 @@ router.get(
 router.patch(
   "/:id",
   authMiddleware.auth(),
-  selfOrAdminMiddleware.selfOrAdmin()
+  roleBaseMiddleware.requireRole("Admin"),
+  UserController.updateUserRole
 );
 
 router.delete(

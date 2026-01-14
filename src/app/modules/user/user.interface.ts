@@ -8,6 +8,7 @@ export type IUser = {
   password: string;
   role?: UserRole;
   isVerified: boolean;
+  isDeleted: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 };
