@@ -1,336 +1,468 @@
-# 📚 BookWorm Backend API
+# BookWorm — Project Analysis Report (Frontend + Backend)
 
-A production-ready backend for a **Book Recommendation, Review, Tutorial & Reading Tracker** application.  
-Built with **Node.js, Express, TypeScript, MongoDB** following a clean **Modular MVC architecture**.
+## 1) Project Overview
 
-## ✨ Core Features
+**BookWorm** is a book recommendation + reading tracker app with two roles:
 
-### 🔐 Authentication & Authorization
-- JWT based authentication
-- Protected routes via `auth.middleware.ts`
-- Role-based access via `role.middleware.ts`
-- Admin-only routes enforced
+- **User**: discover books, manage personal shelves (Want to Read / Currently Reading / Read), track progress, write reviews + ratings, watch tutorials, see personalized recommendations and reading stats.
+- **Admin**: manage users/roles, books, genres, reviews moderation, and YouTube tutorial links.
 
----
+Core goals:
 
-### 📚 Book Module
-- Create, Read, Update, Soft Delete (Admin)
-- Genre population
-- Duplicate title prevention
-- Advanced querying using reusable QueryBuilder
-
-**Query Support**
-- Search (`searchTerm`)
-- Filter (`genre`, `author`)
-- Sort (`sort=-createdAt,title`)
-- Pagination (`page`, `limit`)
-- Field selection (`fields=title,author`)
+- Fully protected routes (no public homepage).
+- Server-side authentication + authorization.
+- Clean, modular code with strong UX for loading/error states.
+- Responsive, book-themed “cozy library” design.
 
 ---
 
-### ⭐ Review Module
-- Users can create reviews
-- Reviews are `pending` by default
-- Admin can approve reviews
-- Only approved reviews are visible
-- Soft delete supported
+## 2) Functional Requirements Breakdown
+
+### 2.1 Authentication & Authorization
+
+**Registration**
+
+- Inputs: `name`, `email (unique)`, `photo upload`, `password`.
+- Validation:
+  - Duplicate email blocked.
+  - Strong password rules (min length, complexity).
+  - Required fields.
+- Data stored securely (hashed password, photo URL).
+
+**Login**
+
+- Inputs: `email`, `password`.
+- Verify credentials + issue tokens.
+
+**Route Protection**
+
+- Every route requires login.
+- If not logged in → redirect to `/login`.
+
+**Default Route Behavior**
+
+- Normal User → redirect `/` → `/my-library`.
+- Admin → redirect `/` → `/admin/dashboard`.
+
+**Role-Based Access Control (RBAC)**
+
+- Admin-only pages: manage books/genres/users/reviews/tutorials.
+- User pages: library/dashboard/browse/details/tutorials.
 
 ---
 
-### 🎥 Tutorial Module
-- Admin can create tutorials
-- Admin can update and delete tutorials
-- Auth required to access tutorials
-- YouTube video URL support
-- Soft delete implemented
+### 2.2 User Features
+
+**A) Browse Books**
+
+- Book list with:
+  - Search: title, author
+  - Filters: genre (multi-select), rating range
+  - Sort: rating, most shelved
+  - Pagination or infinite scroll
+- SSR/SSG using **Next.js App Router** (preferred) for good SEO/performance.
+
+**B) Book Details**
+
+- Show full details: cover, title, author, genre, description, community rating.
+- Actions:
+  - Add to shelf: Want to Read / Currently Reading / Read
+  - Progress tracking (when Currently Reading)
+  - Write review + rating (1–5)
+
+**C) My Library (Reading Tracker)**
+
+- Shelves:
+  - Want to Read
+  - Currently Reading (with progress)
+  - Read
+- Progress model options:
+  - `pagesRead / totalPages` OR `percent`
+- UX:
+  - Inline progress update
+  - Quick move between shelves
+
+**D) Reviews & Ratings**
+
+- User submits review → starts as **pending**.
+- Approved reviews are visible publicly on Book Details.
+
+**E) User Dashboard/Home**
+
+- Reading stats overview:
+  - Books read this year
+  - Total pages read
+  - Average rating given
+  - Favorite genre breakdown
+  - Reading streak
+- Recommendations block (12–18 books grid/carousel)
+
+**F) Tutorials Page**
+
+- 10–12 embedded YouTube videos.
+- Same page for User & Admin viewing; admin can manage.
+
+**G) Reading Challenge / Goals**
+
+- User sets annual goal: e.g., “Read 50 books in 2026”.
+- Track goal completion with circular progress.
 
 ---
 
-### 📖 User Library (Bookshelf / Reading Tracker)
-Allows users to manage their personal reading progress.
+### 2.3 Admin Features
 
-**Shelf States**
-- `want` → Want to Read
-- `reading` → Currently Reading
-- `completed` → Finished Reading
+**Admin Dashboard**
 
-**Business Rules**
-- `want` → progress = `0`
-- `reading` → progress = `1–99`
-- `completed` → progress = `100`
-## 🚀 Tech Stack
-- Node.js
-- Express.js
+- Overview cards:
+  - total users
+  - total books
+  - pending reviews
+- Charts (Chart.js/Recharts):
+  - books per genre
+  - monthly books read (aggregate)
+  - pages over time (optional)
+
+**Manage Books**
+
+- CRUD:
+  - Create: title, author, genre(select existing), description, cover upload → store URL
+  - Read: table/list with thumbnails + actions
+  - Update: all fields editable
+  - Delete: confirmation modal
+
+**Manage Genres**
+
+- Add/edit genres.
+- Books must reference a genre.
+
+**Manage Users**
+
+- View users list.
+- Change roles: Admin ↔ Normal User.
+
+**Moderate Reviews**
+
+- Pending reviews list.
+- Approve or delete.
+
+**Manage Tutorials**
+
+- Add/remove YouTube links.
+- Validate URL and store `videoId`.
+
+---
+
+## 3) Recommendation System (Simple but Explainable)
+
+### 3.1 Inputs
+
+- **User’s Read shelf** genres frequency.
+- **User’s average ratings** by genre and overall.
+- **Community signals**:
+  - Books with high approved review ratings
+  - Most shelved books
+
+### 3.2 Algorithm (Practical Approach)
+
+1. Compute top genres from user’s **Read** shelf.
+2. Create candidate pool:
+   - Books in top genres not already in user shelves.
+   - Add popular books by community rating & most shelved.
+3.
+   ## Score candidates:
+   - genre match weight
+   -
+     - community average rating
+   -
+     - approved reviews count/quality
+4. Pick 12–18 results.
+
+### 3.3 Fallback Rule
+
+- If user has **< 3** books in Read:
+  - Show a mix of popular + random + trending.
+
+### 3.4 “Why this book?” Tooltip
+
+- Store a short explanation string per recommendation, e.g.
+  - “Matches your Mystery preference (4 books read) + high-rated reviews.”
+
+---
+
+## 4) UX / UI Design Plan
+
+**Design vibe:** cozy library, warm colors, paper textures, soft shadows, rounded cards.
+
+### Pages & Layout
+
+- **Navbar**: logo + links by role.
+- **Footer**: socials, links, copyright.
+- Use responsive grid + skeleton loaders.
+
+### UX requirements
+
+- Clear empty states:
+  - No books found
+  - Shelf empty
+  - No tutorials yet
+- Loading states:
+  - list skeleton
+  - button spinner
+- Error states:
+  - toast + inline error messages
+
+---
+
+## 5) Technical Architecture
+
+## 5.1 Frontend (Next.js 14+ App Router)
+
+**Core stack**
+
+- Next.js App Router
+- TypeScript
+- UI: Tailwind + shadcn/ui (or similar)
+- Auth: cookie-based access token + refresh flow OR Next middleware guard
+- Data fetching: Server Components for lists, Client Components for interactions
+
+**Frontend modules**
+
+- `app/(auth)/login`, `app/(auth)/register`
+- `app/(user)/dashboard`, `app/(user)/browse`, `app/(user)/my-library`, `app/(user)/books/[id]`, `app/(user)/tutorials`
+- `app/(admin)/admin/dashboard`, `.../books`, `.../genres`, `.../users`, `.../reviews`, `.../tutorials`
+
+**Route guarding**
+
+- Middleware checks token and role.
+- Redirect rules:
+  - `/` → role-based redirect
+  - non-auth user → `/login`
+
+**Image optimization**
+
+- Use `next/image` for cover + profile photos.
+
+**Charts**
+
+- Recharts/Chart.js in dashboard.
+
+---
+
+## 5.2 Backend (Node.js + Express + MongoDB)
+
+**Core stack**
+
+- Node.js + Express
 - TypeScript
 - MongoDB + Mongoose
-- Zod (Request Validation)
-- JWT Authentication
-- Role Based Authorization (Admin / User)## 📌 API Reference
+- Auth: JWT access + refresh tokens, bcrypt password hash
+- Validation: Zod/Joi
+- Uploads: Cloudinary (recommended) or local
 
-### 🌐 Base URL
+### Backend Modules (Modular MVC)
 
-```http
-http://localhost:5000/api/v1
-```
-
----
-
-## 📚 Book API
-
-### Get all books
-
-```http
-GET /book
-```
-
-| Query Parameter | Type   | Description                           |
-| --------------- | ------ | ------------------------------------- |
-| `searchTerm`    | string | Search by title, author               |
-| `genre`         | string | Filter by genre id                    |
-| `sort`          | string | Sort fields (e.g. `-createdAt,title`) |
-| `page`          | number | Page number                           |
-| `limit`         | number | Items per page                        |
-| `fields`        | string | Select fields                         |
+- `auth` (register/login/refresh/logout)
+- `user` (profile, role update by admin)
+- `book` (CRUD)
+- `genre` (CRUD)
+- `review` (create pending, approve/delete)
+- `tutorial` (CRUD)
+- `library` (shelves, progress updates)
+- `stats` (dashboard + analytics)
+- (optional) `recommendation` (computed endpoint)
 
 ---
 
-### Get single book
+## 6) Data Model / Database Schema (MongoDB)
 
-```http
-GET /book/:id
-```
+### 6.1 User
 
-| Parameter | Type   | Description |
-| --------- | ------ | ----------- |
-| `id`      | string | Book ID     |
+- `_id`
+- `name`
+- `email` (unique)
+- `passwordHash`
+- `photoUrl`
+- `role`: `Admin | User`
+- `createdAt`, `updatedAt`
 
----
+### 6.2 Genre
 
-### Create book (Admin)
+- `_id`
+- `name` (unique)
+- `slug` (unique)
 
-```http
-POST /book
-```
+### 6.3 Book
 
----
+- `_id`
+- `title`
+- `author`
+- `genreId` (ref Genre)
+- `description`
+- `coverImageUrl`
+- `totalPages` (optional but helpful for progress)
+- `avgRating` (derived)
+- `approvedReviewCount` (derived)
+- `shelvedCount` (derived)
 
-### Update book (Admin)
+### 6.4 Review
 
-```http
-PATCH /book/:id
-```
+- `_id`
+- `bookId` (ref Book)
+- `userId` (ref User)
+- `rating` (1–5)
+- `text`
+- `status`: `pending | approved`
+- `createdAt`
 
----
+### 6.5 LibraryItem (User Shelves)
 
-### Delete book (Admin – Soft delete)
+- `_id`
+- `userId` (ref User)
+- `bookId` (ref Book)
+- `shelf`: `want | reading | read`
+- `progressPercent` OR `pagesRead`
+- `startedAt`, `finishedAt`
+- Unique index: `(userId, bookId)` to prevent duplicates
 
-```http
-DELETE /book/:id
-```
+### 6.6 ReadingGoal
 
----
+- `_id`
+- `userId`
+- `year` (e.g., 2026)
+- `goalBooks` (e.g., 50)
 
-## 🏷️ Genre API
+### 6.7 Tutorial
 
-### Get all genres
-
-```http
-GET /genre
-```
-
----
-
-### Create genre (Admin)
-
-```http
-POST /genre
-```
-
----
-
-### Update genre (Admin)
-
-```http
-PATCH /genre/:id
-```
-
----
-
-### Delete genre (Admin)
-
-```http
-DELETE /genre/:id
-```
+- `_id`
+- `title`
+- `youtubeUrl`
+- `youtubeVideoId`
+- `createdBy` (admin userId)
 
 ---
 
-## ⭐ Review API
+## 7) API Design (Sample Endpoints)
 
-### Create review
+> Prefix: `/api/v1`
 
-```http
-POST /review
-```
+### Auth
 
----
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+- `GET /auth/me`
 
-### Get reviews by book
+### Books
 
-```http
-GET /review/book/:bookId
-```
+- `GET /books` (search, filter, sort, pagination)
+- `POST /books` (admin)
+- `GET /books/:id`
+- `PATCH /books/:id` (admin)
+- `DELETE /books/:id` (admin)
 
-| Parameter | Type   | Description |
-| --------- | ------ | ----------- |
-| `bookId`  | string | Book ID     |
+### Genres
 
----
+- `GET /genres`
+- `POST /genres` (admin)
+- `PATCH /genres/:id` (admin)
+- `DELETE /genres/:id` (admin)
 
-### Approve review (Admin)
+### Reviews
 
-```http
-PATCH /review/:id/approve
-```
+- `POST /reviews` (user) → pending
+- `GET /reviews/pending` (admin)
+- `PATCH /reviews/:id/approve` (admin)
+- `DELETE /reviews/:id` (admin)
+- `GET /books/:id/reviews` (approved only)
 
----
+### Library
 
-## 🎥 Tutorial API
+- `GET /library` (my shelves)
+- `POST /library` (add/move shelf)
+- `PATCH /library/:bookId/progress` (update reading progress)
 
-### Get all tutorials
+### Tutorials
 
-```http
-GET /tutorial
-```
+- `GET /tutorials`
+- `POST /tutorials` (admin)
+- `DELETE /tutorials/:id` (admin)
 
----
+### Stats + Recommendations
 
-### Create tutorial (Admin)
-
-```http
-POST /tutorial
-```
-
----
-
-### Update tutorial (Admin)
-
-```http
-PATCH /tutorial/:id
-```
-
----
-
-### Delete tutorial (Admin – Soft delete)
-
-```http
-DELETE /tutorial/:id
-```
+- `GET /stats/user` (user dashboard stats)
+- `GET /stats/admin` (admin overview)
+- `GET /recommendations` (personalized)
 
 ---
 
-## 👤 User API
+## 8) Error Handling & Edge Cases
 
-### Get all users (Admin)
+**Auth**
 
-```http
-GET /user
-```
+- Wrong credentials
+- Token expired (refresh flow)
+- Forbidden role access
 
----
+**Books**
 
-### Get single user
+- Invalid book ID
+- Genre not found
+- Empty cover image
 
-```http
-GET /user/:id
-```
+**Reviews**
 
----
+- Prevent multiple reviews per user per book (optional rule)
+- Pending reviews hidden from public
 
-### Update user role (Admin)
+**Library**
 
-```http
-PATCH /user/:id
-```
+- Prevent duplicate shelf items
+- Progress can’t exceed 100% or totalPages
+- If shelf becomes `read`, auto set progress 100%
 
----
+**Uploads**
 
-## 📖 User Library API
-
-### Get my library
-
-```http
-GET /user-library
-```
+- Validate file size + type
+- Cloud upload failure fallback
 
 ---
 
-### Add book to library
+## 9) Deployment Plan
 
-```http
-POST /user-library
-```
+**Frontend**: Vercel
 
----
+- Configure env vars: `NEXT_PUBLIC_API_URL`, etc.
+- Ensure middleware works on production.
 
-### Update shelf / progress
+**Backend**: Render/Railway/VPS
 
-```http
-PATCH /user-library/:id
-```
+- Env vars: DB URI, JWT secrets, Cloudinary keys
+- CORS allow Vercel domain
+- Production cookie flags
 
----
+**Key checks**
 
-### Remove book from library
-
-```http
-DELETE /user-library/:id
-```
+- No console errors
+- Auth works on live
+- API health endpoint works
 
 ---
 
-## 🔐 Authentication Notes
+## 10) Suggested Work Plan (High-Level)
 
-Protected routes require the following header:
-
-```http
-Authorization: Bearer <TOKEN>
-```
-
-Admin-only routes require `role = Admin`.
-
----
-
-## 📌 Shelf States (User Library)
-
-| Value       | Meaning           |
-| ----------- | ----------------- |
-| `want`      | Want to Read      |
-| `reading`   | Currently Reading |
-| `completed` | Finished Reading  |
+1. Backend auth + roles + core models
+2. Books/Genres CRUD
+3. Reviews pending + moderation
+4. Library shelves + progress
+5. Recommendations + stats endpoints
+6. Frontend routes + middleware guards
+7. UI pages + responsive layout
+8. Deploy + fix edge cases
 
 ---
 
+## 11) Summary
 
-## Demo
+This project demonstrates full-stack skills: secure auth + RBAC, modular backend, SSR-ready Next.js frontend, advanced UX, data modeling, and a practical recommendation engine. The system is designed for real-world reliability: protected routes, clean code, and deploy-ready production behavior.
 
-Insert gif or link to demo
-
-
-## Deployment
-
-To deploy this project run
-
-```bash
-  npm run deploy
-```
-
-
-## Installation
-
-Install my-project with npm
-
-```bash
-  npm install my-project
-  cd my-project
-```
-    
