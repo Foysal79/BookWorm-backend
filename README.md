@@ -140,10 +140,6 @@ src/
       stats.service.ts
       stats.route.ts
 
-    recommendation/
-      recommendation.controller.ts
-      recommendation.service.ts
-      recommendation.route.ts
 ```
 
 ---
