@@ -8,8 +8,8 @@ export type IReadingGoal = {
 
     targetBook : number;
 
-    startDate : Date;
-    endDate : Date;
+    startDate : string;
+    endDate : string;
 
     isActive : boolean;
     isDeleted : boolean;

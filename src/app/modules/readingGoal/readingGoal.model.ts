@@ -19,8 +19,8 @@ const schema = new Schema<IReadingGoal>(
       required: true,
       min: 1,
     },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
+    startDate: { type: String, required: true },
+    endDate: { type: String, required: true },
 
     isActive: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false },

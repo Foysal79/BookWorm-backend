@@ -1,16 +1,16 @@
-import { UserLibrary } from "../userLibrary/userLibrary.model";
-import { IReadingGoal, IReadingGoalProgress } from "./readingGoal.interface";
 import { ReadingGoal } from "./readingGoal.model";
+import { UserLibrary } from "../userLibrary/userLibrary.model";
+import { IReadingGoalProgress } from "./readingGoal.interface";
 
-const createReadingGoal = async (payload: IReadingGoal) => {
+const createReadingGoal = async (payload: any) => {
   try {
-    // check any Ruining goal active
+    // one active goal per user
     await ReadingGoal.updateMany(
       { user: payload.user, isActive: true, isDeleted: false },
       { isActive: false }
     );
-    const user = await ReadingGoal.create(payload);
-    return user;
+
+    return await ReadingGoal.create(payload);
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -18,11 +18,10 @@ const createReadingGoal = async (payload: IReadingGoal) => {
 
 const getMyGoals = async (userId: string) => {
   try {
-    const goal = await ReadingGoal.find({
+    return await ReadingGoal.find({
       user: userId,
       isDeleted: false,
     }).sort({ createdAt: -1 });
-    return goal;
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -30,12 +29,11 @@ const getMyGoals = async (userId: string) => {
 
 const getActiveGoal = async (userId: string) => {
   try {
-    const goal = await ReadingGoal.findOne({
+    return await ReadingGoal.findOne({
       user: userId,
       isActive: true,
       isDeleted: false,
     });
-    return goal;
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -56,11 +54,13 @@ const getActiveGoalProgress = async (
       shelf: "completed",
       updatedAt: { $gte: start, $lte: end },
     });
+
     const remaining = Math.max(0, goal.targetBook - completedBooks);
     const percentage =
       goal.targetBook > 0
         ? Math.min(100, Math.round((completedBooks / goal.targetBook) * 100))
         : 0;
+
     return {
       goal: goal.toObject() as any,
       completedBooks,
@@ -74,7 +74,7 @@ const getActiveGoalProgress = async (
 
 const updateGoal = async (id: string, payload: any) => {
   try {
-    const goal = await ReadingGoal.findOneAndUpdate(
+    return await ReadingGoal.findOneAndUpdate(
       { _id: id, isDeleted: false },
       payload,
       { new: true }
@@ -86,14 +86,11 @@ const updateGoal = async (id: string, payload: any) => {
 
 const deleteGoal = async (id: string) => {
   try {
-    const goal = await ReadingGoal.findByIdAndUpdate(
+    return await ReadingGoal.findByIdAndUpdate(
       id,
       { isDeleted: true, isActive: false },
-      {
-        new: true,
-      }
+      { new: true }
     );
-    return goal;
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -102,6 +99,7 @@ const deleteGoal = async (id: string) => {
 export const ReadingGoalService = {
   createReadingGoal,
   getMyGoals,
+  getActiveGoal,
   getActiveGoalProgress,
   updateGoal,
   deleteGoal,
