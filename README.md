@@ -1,6 +1,6 @@
 # BookWorm — Project Analysis Report (Frontend + Backend)
 
-## 1) Project Overview
+##  Project Overview
 
 **BookWorm** is a book recommendation + reading tracker app with two roles:
 
@@ -16,9 +16,9 @@ Core goals:
 
 ---
 
-## 2) Functional Requirements Breakdown
+##  Functional Requirements Breakdown
 
-### 2.1 Authentication & Authorization
+###  Authentication & Authorization
 
 **Registration**
 
@@ -51,7 +51,7 @@ Core goals:
 
 ---
 
-### 2.2 User Features
+###  User Features
 
 **A) Browse Books**
 
@@ -109,7 +109,7 @@ Core goals:
 
 ---
 
-### 2.3 Admin Features
+###  Admin Features
 
 **Admin Dashboard**
 
@@ -152,9 +152,9 @@ Core goals:
 
 ---
 
-## 3) Recommendation System (Simple but Explainable)
+##  Recommendation System (Simple but Explainable)
 
-### 3.1 Inputs
+###  Inputs
 
 - **User’s Read shelf** genres frequency.
 - **User’s average ratings** by genre and overall.
@@ -162,7 +162,7 @@ Core goals:
   - Books with high approved review ratings
   - Most shelved books
 
-### 3.2 Algorithm (Practical Approach)
+###  Algorithm (Practical Approach)
 
 1. Compute top genres from user’s **Read** shelf.
 2. Create candidate pool:
@@ -177,78 +177,23 @@ Core goals:
      - approved reviews count/quality
 4. Pick 12–18 results.
 
-### 3.3 Fallback Rule
+###  Fallback Rule
 
 - If user has **< 3** books in Read:
   - Show a mix of popular + random + trending.
 
-### 3.4 “Why this book?” Tooltip
+###  “Why this book?” Tooltip
 
 - Store a short explanation string per recommendation, e.g.
   - “Matches your Mystery preference (4 books read) + high-rated reviews.”
 
 ---
 
-## 4) UX / UI Design Plan
 
-**Design vibe:** cozy library, warm colors, paper textures, soft shadows, rounded cards.
 
-### Pages & Layout
+##  Technical Architecture
 
-- **Navbar**: logo + links by role.
-- **Footer**: socials, links, copyright.
-- Use responsive grid + skeleton loaders.
-
-### UX requirements
-
-- Clear empty states:
-  - No books found
-  - Shelf empty
-  - No tutorials yet
-- Loading states:
-  - list skeleton
-  - button spinner
-- Error states:
-  - toast + inline error messages
-
----
-
-## 5) Technical Architecture
-
-## 5.1 Frontend (Next.js 14+ App Router)
-
-**Core stack**
-
-- Next.js App Router
-- TypeScript
-- UI: Tailwind + shadcn/ui (or similar)
-- Auth: cookie-based access token + refresh flow OR Next middleware guard
-- Data fetching: Server Components for lists, Client Components for interactions
-
-**Frontend modules**
-
-- `app/(auth)/login`, `app/(auth)/register`
-- `app/(user)/dashboard`, `app/(user)/browse`, `app/(user)/my-library`, `app/(user)/books/[id]`, `app/(user)/tutorials`
-- `app/(admin)/admin/dashboard`, `.../books`, `.../genres`, `.../users`, `.../reviews`, `.../tutorials`
-
-**Route guarding**
-
-- Middleware checks token and role.
-- Redirect rules:
-  - `/` → role-based redirect
-  - non-auth user → `/login`
-
-**Image optimization**
-
-- Use `next/image` for cover + profile photos.
-
-**Charts**
-
-- Recharts/Chart.js in dashboard.
-
----
-
-## 5.2 Backend (Node.js + Express + MongoDB)
+## Backend (Node.js + Express + MongoDB)
 
 **Core stack**
 
@@ -273,9 +218,9 @@ Core goals:
 
 ---
 
-## 6) Data Model / Database Schema (MongoDB)
+##  Data Model / Database Schema (MongoDB)
 
-### 6.1 User
+###  User
 
 - `_id`
 - `name`
@@ -285,13 +230,13 @@ Core goals:
 - `role`: `Admin | User`
 - `createdAt`, `updatedAt`
 
-### 6.2 Genre
+###  Genre
 
 - `_id`
 - `name` (unique)
 - `slug` (unique)
 
-### 6.3 Book
+###  Book
 
 - `_id`
 - `title`
@@ -304,7 +249,7 @@ Core goals:
 - `approvedReviewCount` (derived)
 - `shelvedCount` (derived)
 
-### 6.4 Review
+###  Review
 
 - `_id`
 - `bookId` (ref Book)
@@ -314,7 +259,7 @@ Core goals:
 - `status`: `pending | approved`
 - `createdAt`
 
-### 6.5 LibraryItem (User Shelves)
+###  LibraryItem (User Shelves)
 
 - `_id`
 - `userId` (ref User)
@@ -324,14 +269,14 @@ Core goals:
 - `startedAt`, `finishedAt`
 - Unique index: `(userId, bookId)` to prevent duplicates
 
-### 6.6 ReadingGoal
+###  ReadingGoal
 
 - `_id`
 - `userId`
 - `year` (e.g., 2026)
 - `goalBooks` (e.g., 50)
 
-### 6.7 Tutorial
+###  Tutorial
 
 - `_id`
 - `title`
@@ -341,62 +286,687 @@ Core goals:
 
 ---
 
-## 7) API Design (Sample Endpoints)
+##  API Design (Sample Endpoints)
 
-> Prefix: `/api/v1`
+Production Base URL:
+- `https://bookreading-five.vercel.app/api/v1`
 
-### Auth
-
-- `POST /auth/register`
-- `POST /auth/login`
-- `POST /auth/refresh`
-- `POST /auth/logout`
-- `GET /auth/me`
-
-### Books
-
-- `GET /books` (search, filter, sort, pagination)
-- `POST /books` (admin)
-- `GET /books/:id`
-- `PATCH /books/:id` (admin)
-- `DELETE /books/:id` (admin)
-
-### Genres
-
-- `GET /genres`
-- `POST /genres` (admin)
-- `PATCH /genres/:id` (admin)
-- `DELETE /genres/:id` (admin)
-
-### Reviews
-
-- `POST /reviews` (user) → pending
-- `GET /reviews/pending` (admin)
-- `PATCH /reviews/:id/approve` (admin)
-- `DELETE /reviews/:id` (admin)
-- `GET /books/:id/reviews` (approved only)
-
-### Library
-
-- `GET /library` (my shelves)
-- `POST /library` (add/move shelf)
-- `PATCH /library/:bookId/progress` (update reading progress)
-
-### Tutorials
-
-- `GET /tutorials`
-- `POST /tutorials` (admin)
-- `DELETE /tutorials/:id` (admin)
-
-### Stats + Recommendations
-
-- `GET /stats/user` (user dashboard stats)
-- `GET /stats/admin` (admin overview)
-- `GET /recommendations` (personalized)
+Local Base URL:
+- `http://localhost:5000/api/v1`
 
 ---
 
-## 8) Error Handling & Edge Cases
+## Authentication
+Most endpoints require a JWT access token.
+
+Add this header:
+
+```http
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+---
+
+## API Endpoints
+
+### User (`/user`)
+
+#### Register (Public)
+- **POST** `/user/register`
+
+**Body**
+```json
+{
+  "name": "Foysal",
+  "email": "foysal@gmail.com",
+  "password": "123456"
+}
+```
+
+#### Login (Public)
+- **POST** `/user/login`
+
+**Body**
+```json
+{
+  "email": "foysal@gmail.com",
+  "password": "123456"
+}
+```
+
+**Response (example)**
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "JWT_TOKEN_HERE",
+    "user": {
+      "_id": "USER_ID",
+      "name": "Foysal",
+      "email": "foysal@gmail.com",
+      "role": "User"
+    }
+  }
+}
+```
+
+#### Get All Users (Admin)
+- **GET** `/user`
+
+#### Get Single User (Self/Admin)
+- **GET** `/user/:id`
+
+#### Update User Role (Admin)
+- **PATCH** `/user/:id`
+
+**Body**
+```json
+{ "role": "Admin" }
+```
+
+#### Delete User (Admin)
+- **DELETE** `/user/:id`
+
+---
+
+### Book (`/book`)
+
+#### Get All Books (Auth)
+- **GET** `/book`
+
+**Query (optional)**
+- `searchTerm=atomic`
+- `sort=-createdAt`
+- `page=1&limit=10`
+- `fields=title,author,genre`
+
+#### Get Single Book (Auth)
+- **GET** `/book/:id`
+
+#### Create Book (Admin)
+- **POST** `/book`
+
+**Body (example)**
+```json
+{
+  "title": "Atomic Habits",
+  "author": "James Clear",
+  "coverImageUrl": "https://...",
+  "genre": "_toggle_with_your_genre_id_or_slug_",
+  "description": "..."
+}
+```
+
+#### Update Book (Admin)
+- **PATCH** `/book/:id`
+
+**Body (example)**
+```json
+{ "title": "Atomic Habits (Updated)" }
+```
+
+#### Delete Book (Admin)
+- **DELETE** `/book/:id`
+
+---
+
+### Genre (`/genre`)
+
+#### Get All Genres (Auth)
+- **GET** `/genre`
+
+#### Create Genre (Admin)
+- **POST** `/genre`
+
+**Body**
+```json
+{ "name": "Fiction" }
+```
+
+#### Update Genre (Admin)
+- **PATCH** `/genre/:id`
+
+**Body**
+```json
+{ "name": "Sci-Fi" }
+```
+
+#### Delete Genre (Admin)
+- **DELETE** `/genre/:id`
+
+---
+
+### Review (`/review`)
+
+#### Create Review (Auth)
+- **POST** `/review`
+
+**Body (example)**
+```json
+{
+  "book": "BOOK_ID",
+  "rating": 5,
+  "comment": "Amazing book!"
+}
+```
+
+#### Get Reviews By Book (Auth)
+- **GET** `/review/book/:bookId`
+
+#### Approve Review (Admin)
+- **PATCH** `/review/:id/approve`
+
+---
+
+### User Library (`/user-library`)
+
+#### Add to My Library (Auth)
+- **POST** `/user-library`
+
+**Body (example)**
+```json
+{
+  "book": "BOOK_ID",
+  "status": "reading"
+}
+```
+
+#### Get My Library (Auth)
+- **GET** `/user-library/me`
+
+---
+
+### Tutorial (`/tutorial`)
+
+#### Create Tutorial (Admin)
+- **POST** `/tutorial`
+
+**Body (example)**
+```json
+{
+  "title": "How to build reading habit",
+  "content": "..."
+}
+```
+
+#### Get All Tutorials (Auth)
+- **GET** `/tutorial`
+
+#### Update Tutorial (Admin)
+- **PATCH** `/tutorial/:id`
+
+#### Delete Tutorial (Admin)
+- **DELETE** `/tutorial/:id`
+
+---
+
+### Reading Goal (`/reading-goal`)
+
+#### Create Reading Goal (Auth)
+- **POST** `/reading-goal`
+
+**Body (example)**
+```json
+{
+  "period": "monthly",
+  "targetBook": 5,
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-31"
+}
+```
+
+#### Get My Goals (Auth, Admin/User)
+- **GET** `/reading-goal/user/:userId`
+
+#### Get My Active Goal (Auth, Admin/User)
+- **GET** `/reading-goal/active/:userId`
+
+#### Get Active Goal Progress (Auth, Admin/User)
+- **GET** `/reading-goal/active/:userId/progress`
+
+#### Update Goal (Auth)
+- **PATCH** `/reading-goal/:id`
+
+**Body (example)**
+```json
+{
+  "targetBook": 10,
+  "isActive": true
+}
+```
+
+#### Delete Goal (Auth)
+- **DELETE** `/reading-goal/:id`
+
+---
+
+## Quick Endpoint Table
+
+| Module | Method | Endpoint | Access |
+|---|---|---|---|
+| User | POST | `/user/register` | Public |
+| User | POST | `/user/login` | Public |
+| User | GET | `/user` | Admin |
+| User | GET | `/user/:id` | Self/Admin |
+| User | PATCH | `/user/:id` | Admin |
+| User | DELETE | `/user/:id` | Admin |
+| Book | GET | `/book` | Auth |
+| Book | GET | `/book/:id` | Auth |
+| Book | POST | `/book` | Admin |
+| Book | PATCH | `/book/:id` | Admin |
+| Book | DELETE | `/book/:id` | Admin |
+| Genre | GET | `/genre` | Auth |
+| Genre | POST | `/genre` | Admin |
+| Genre | PATCH | `/genre/:id` | Admin |
+| Genre | DELETE | `/genre/:id` | Admin |
+| Review | POST | `/review` | Auth |
+| Review | GET | `/review/book/:bookId` | Auth |
+| Review | PATCH | `/review/:id/approve` | Admin |
+| Library | POST | `/user-library` | Auth |
+| Library | GET | `/user-library/me` | Auth |
+| Tutorial | POST | `/tutorial` | Admin |
+| Tutorial | GET | `/tutorial` | Auth |
+| Tutorial | PATCH | `/tutorial/:id` | Admin |
+| Tutorial | DELETE | `/tutorial/:id` | Admin |
+| Goal | POST | `/reading-goal` | Auth |
+| Goal | GET | `/reading-goal/user/:userId` | Auth |
+| Goal | GET | `/reading-goal/active/:userId` | Auth |
+| Goal | GET | `/reading-goal/active/:userId/progress` | Auth |
+| Goal | PATCH | `/reading-goal/:id` | Auth |
+| Goal | DELETE | `/reading-goal/:id` | Auth |
+
+---
+
+# Postman Collection JSON
+
+> Copy-paste into a file like: `BookWorm.postman_collection.json` and Import in Postman.
+
+```json
+{
+  "info": {
+    "name": "BookWorm API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://bookreading-five.vercel.app/api/v1" },
+    { "key": "token", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "bookId", "value": "" },
+    { "key": "genreId", "value": "" },
+    { "key": "reviewId", "value": "" },
+    { "key": "tutorialId", "value": "" },
+    { "key": "goalId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/user/register", "host": ["{{baseUrl}}"], "path": ["user", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Foysal\",\n  \"email\": \"foysal@gmail.com\",\n  \"password\": \"123456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/user/login", "host": ["{{baseUrl}}"], "path": ["user", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"foysal@gmail.com\",\n  \"password\": \"123456\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try {",
+                  "  const json = pm.response.json();",
+                  "  const token = json?.data?.accessToken;",
+                  "  if (token) pm.collectionVariables.set('token', token);",
+                  "} catch (e) {}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/user", "host": ["{{baseUrl}}"], "path": ["user"] }
+          }
+        },
+        {
+          "name": "Get Single User (Self/Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/user/{{userId}}", "host": ["{{baseUrl}}"], "path": ["user", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Update User Role (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/user/{{userId}}", "host": ["{{baseUrl}}"], "path": ["user", "{{userId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"Admin\"\n}" }
+          }
+        },
+        {
+          "name": "Delete User (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/user/{{userId}}", "host": ["{{baseUrl}}"], "path": ["user", "{{userId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Book",
+      "item": [
+        {
+          "name": "Get All Books",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/book?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["book"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Book",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/book/{{bookId}}", "host": ["{{baseUrl}}"], "path": ["book", "{{bookId}}"] }
+          }
+        },
+        {
+          "name": "Create Book (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/book", "host": ["{{baseUrl}}"], "path": ["book"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Atomic Habits\",\n  \"author\": \"James Clear\",\n  \"coverImageUrl\": \"https://...\",\n  \"genre\": \"{{genreId}}\",\n  \"description\": \"...\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Book (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/book/{{bookId}}", "host": ["{{baseUrl}}"], "path": ["book", "{{bookId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated Title\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Book (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/book/{{bookId}}", "host": ["{{baseUrl}}"], "path": ["book", "{{bookId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Genre",
+      "item": [
+        {
+          "name": "Get All Genres",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/genre", "host": ["{{baseUrl}}"], "path": ["genre"] }
+          }
+        },
+        {
+          "name": "Create Genre (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/genre", "host": ["{{baseUrl}}"], "path": ["genre"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Fiction\"\n}" }
+          }
+        },
+        {
+          "name": "Update Genre (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/genre/{{genreId}}", "host": ["{{baseUrl}}"], "path": ["genre", "{{genreId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Sci-Fi\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Genre (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/genre/{{genreId}}", "host": ["{{baseUrl}}"], "path": ["genre", "{{genreId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/review", "host": ["{{baseUrl}}"], "path": ["review"] },
+            "body": { "mode": "raw", "raw": "{\n  \"book\": \"{{bookId}}\",\n  \"rating\": 5,\n  \"comment\": \"Amazing book!\"\n}" }
+          }
+        },
+        {
+          "name": "Get Reviews By Book",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/review/book/{{bookId}}", "host": ["{{baseUrl}}"], "path": ["review", "book", "{{bookId}}"] }
+          }
+        },
+        {
+          "name": "Approve Review (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/review/{{reviewId}}/approve", "host": ["{{baseUrl}}"], "path": ["review", "{{reviewId}}", "approve"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Library",
+      "item": [
+        {
+          "name": "Add to My Library",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/user-library", "host": ["{{baseUrl}}"], "path": ["user-library"] },
+            "body": { "mode": "raw", "raw": "{\n  \"book\": \"{{bookId}}\",\n  \"status\": \"reading\"\n}" }
+          }
+        },
+        {
+          "name": "Get My Library",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/user-library/me", "host": ["{{baseUrl}}"], "path": ["user-library", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tutorial",
+      "item": [
+        {
+          "name": "Get All Tutorials",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/tutorial", "host": ["{{baseUrl}}"], "path": ["tutorial"] }
+          }
+        },
+        {
+          "name": "Create Tutorial (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tutorial", "host": ["{{baseUrl}}"], "path": ["tutorial"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"How to build reading habit\",\n  \"content\": \"...\"\n}" }
+          }
+        },
+        {
+          "name": "Update Tutorial (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tutorial/{{tutorialId}}", "host": ["{{baseUrl}}"], "path": ["tutorial", "{{tutorialId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated title\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Tutorial (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/tutorial/{{tutorialId}}", "host": ["{{baseUrl}}"], "path": ["tutorial", "{{tutorialId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reading Goal",
+      "item": [
+        {
+          "name": "Create Reading Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/reading-goal", "host": ["{{baseUrl}}"], "path": ["reading-goal"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"period\": \"monthly\",\n  \"targetBook\": 5,\n  \"startDate\": \"2026-01-01\",\n  \"endDate\": \"2026-01-31\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Goals",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/reading-goal/user/{{userId}}", "host": ["{{baseUrl}}"], "path": ["reading-goal", "user", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Get My Active Goal",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/reading-goal/active/{{userId}}", "host": ["{{baseUrl}}"], "path": ["reading-goal", "active", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Get Active Goal Progress",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/reading-goal/active/{{userId}}/progress", "host": ["{{baseUrl}}"], "path": ["reading-goal", "active", "{{userId}}", "progress"] }
+          }
+        },
+        {
+          "name": "Update Goal",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/reading-goal/{{goalId}}", "host": ["{{baseUrl}}"], "path": ["reading-goal", "{{goalId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"targetBook\": 10\n}" }
+          }
+        },
+        {
+          "name": "Delete Goal",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/reading-goal/{{goalId}}", "host": ["{{baseUrl}}"], "path": ["reading-goal", "{{goalId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+##  Error Handling & Edge Cases
 
 **Auth**
 
@@ -427,42 +997,4 @@ Core goals:
 - Cloud upload failure fallback
 
 ---
-
-## 9) Deployment Plan
-
-**Frontend**: Vercel
-
-- Configure env vars: `NEXT_PUBLIC_API_URL`, etc.
-- Ensure middleware works on production.
-
-**Backend**: Render/Railway/VPS
-
-- Env vars: DB URI, JWT secrets, Cloudinary keys
-- CORS allow Vercel domain
-- Production cookie flags
-
-**Key checks**
-
-- No console errors
-- Auth works on live
-- API health endpoint works
-
----
-
-## 10) Suggested Work Plan (High-Level)
-
-1. Backend auth + roles + core models
-2. Books/Genres CRUD
-3. Reviews pending + moderation
-4. Library shelves + progress
-5. Recommendations + stats endpoints
-6. Frontend routes + middleware guards
-7. UI pages + responsive layout
-8. Deploy + fix edge cases
-
----
-
-## 11) Summary
-
-This project demonstrates full-stack skills: secure auth + RBAC, modular backend, SSR-ready Next.js frontend, advanced UX, data modeling, and a practical recommendation engine. The system is designed for real-world reliability: protected routes, clean code, and deploy-ready production behavior.
 

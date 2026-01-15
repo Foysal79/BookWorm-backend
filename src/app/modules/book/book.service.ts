@@ -19,36 +19,32 @@ const createBook = async (payload: any) => {
 };
 
 const getAllBooks = async (query: Record<string, unknown>) => {
-  // base filter
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+
+  // data query
   const baseQuery = Book.find({ isDeleted: false }).populate("genre");
-  //Build query (search/filter/sort/pagination/fields)
   const qb = new QueryBuilder(baseQuery, query)
     .search(BookSearchableFields)
     .filter()
     .sort()
-    .Pagination()
+    .pagination()
     .fields();
 
   const data = await qb.modelQuery;
 
-  
-  const countBaseQuery = Book.find({ isDeleted: false });
-  const countQb = new QueryBuilder(countBaseQuery, query)
-    .search(BookSearchableFields)
-    .filter();
-
-  const total = await Book.countDocuments(
-    (countQb.modelQuery as any).getFilter()
-  );
-
-  const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 10;
+  // count query (same filters, no populate needed)
+  const total = await Book.countDocuments({
+    isDeleted: false,
+    ...qb.getFilterQuery(),
+  });
 
   return {
     meta: { page, limit, total },
     data,
   };
 };
+
 
 const getSingleBookById = async (id: string) => {
   try {

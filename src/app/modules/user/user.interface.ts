@@ -1,13 +1,13 @@
 import { Types } from "mongoose";
 
-export type UserRole = "Admin" | "User";
+export type TRole = "Admin" | "User";
 
 export type IUser = {
   name: string;
   img: string;
   email: string;
   password: string;
-  role?: UserRole;
+  role?: TRole;
   isVerified: boolean;
   isDeleted: boolean;
   createdAt?: Date;

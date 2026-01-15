@@ -41,7 +41,7 @@ const update = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id as any)) {
       return res.status(400).json({
         success: false,
         message: "Invalid genre id",
@@ -50,7 +50,7 @@ const update = async (req: Request, res: Response) => {
 
     const { body } = genreValidation.updateGenreSchema.parse({ body: req.body });
 
-    const updated = await GenreService.updateGenre(id, body.name);
+    const updated = await GenreService.updateGenre(id as any, body.name);
 
     if (!updated) {
       return res.status(404).json({
@@ -76,14 +76,14 @@ const remove = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id as any)) {
       return res.status(400).json({
         success: false,
         message: "Invalid genre id",
       });
     }
 
-    const deleted = await GenreService.deleteGenre(id);
+    const deleted = await GenreService.deleteGenre(id as any);
 
     if (!deleted) {
       return res.status(404).json({

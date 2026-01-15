@@ -69,7 +69,7 @@ const getAllUsers = async (req: AuthRequest, res: Response) => {
 const getSingleUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const user = await UserService.getSingleUser(id);
+    const user = await UserService.getSingleUser(id as any);
     return res.status(201).json({
       success: true,
       message: "get all User successfully",

@@ -1,4 +1,4 @@
-import { IUser, TLoginPayload, TRegisterPayload } from "./user.interface";
+import { IUser, TLoginPayload, TRegisterPayload, TRole } from "./user.interface";
 import { User } from "./user.model";
 import jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
