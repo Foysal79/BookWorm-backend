@@ -1,227 +1,156 @@
-# BookWorm — Project Analysis Report (Frontend + Backend)
+# BookWorm — Backend API (Project Analysis + Documentation)
 
-##  Project Overview
-
-**BookWorm** is a book recommendation + reading tracker app with two roles:
-
-- **User**: discover books, manage personal shelves (Want to Read / Currently Reading / Read), track progress, write reviews + ratings, watch tutorials, see personalized recommendations and reading stats.
-- **Admin**: manage users/roles, books, genres, reviews moderation, and YouTube tutorial links.
-
-Core goals:
-
-- Fully protected routes (no public homepage).
-- Server-side authentication + authorization.
-- Clean, modular code with strong UX for loading/error states.
-- Responsive, book-themed “cozy library” design.
+A cozy-library themed **Book Recommendation + Reading Tracker** backend with **role-based access (Admin/User)**, fully protected routes, and modular MVC architecture.
 
 ---
 
-##  Functional Requirements Breakdown
+## ✨ Project Overview
 
-###  Authentication & Authorization
+**BookWorm** has two roles:
 
-**Registration**
+- **User**: browse/search books, manage shelves (Want / Reading / Read), track progress, submit reviews, watch tutorials, view stats and recommendations.
+- **Admin**: manage users/roles, books, genres, moderate reviews, manage tutorial links.
 
-- Inputs: `name`, `email (unique)`, `photo upload`, `password`.
-- Validation:
-  - Duplicate email blocked.
-  - Strong password rules (min length, complexity).
-  - Required fields.
-- Data stored securely (hashed password, photo URL).
-
-**Login**
-
-- Inputs: `email`, `password`.
-- Verify credentials + issue tokens.
-
-**Route Protection**
-
-- Every route requires login.
-- If not logged in → redirect to `/login`.
-
-**Default Route Behavior**
-
-- Normal User → redirect `/` → `/my-library`.
-- Admin → redirect `/` → `/admin/dashboard`.
-
-**Role-Based Access Control (RBAC)**
-
-- Admin-only pages: manage books/genres/users/reviews/tutorials.
-- User pages: library/dashboard/browse/details/tutorials.
+**Core goals**
+- ✅ All routes protected (no public homepage idea on backend → all endpoints except auth require token)
+- ✅ Server-side authentication + authorization (JWT)
+- ✅ Modular MVC codebase
+- ✅ Strong validation + consistent error handling
 
 ---
 
-###  User Features
+## 🧰 Tech Stack
 
-**A) Browse Books**
-
-- Book list with:
-  - Search: title, author
-  - Filters: genre (multi-select), rating range
-  - Sort: rating, most shelved
-  - Pagination or infinite scroll
-- SSR/SSG using **Next.js App Router** (preferred) for good SEO/performance.
-
-**B) Book Details**
-
-- Show full details: cover, title, author, genre, description, community rating.
-- Actions:
-  - Add to shelf: Want to Read / Currently Reading / Read
-  - Progress tracking (when Currently Reading)
-  - Write review + rating (1–5)
-
-**C) My Library (Reading Tracker)**
-
-- Shelves:
-  - Want to Read
-  - Currently Reading (with progress)
-  - Read
-- Progress model options:
-  - `pagesRead / totalPages` OR `percent`
-- UX:
-  - Inline progress update
-  - Quick move between shelves
-
-**D) Reviews & Ratings**
-
-- User submits review → starts as **pending**.
-- Approved reviews are visible publicly on Book Details.
-
-**E) User Dashboard/Home**
-
-- Reading stats overview:
-  - Books read this year
-  - Total pages read
-  - Average rating given
-  - Favorite genre breakdown
-  - Reading streak
-- Recommendations block (12–18 books grid/carousel)
-
-**F) Tutorials Page**
-
-- 10–12 embedded YouTube videos.
-- Same page for User & Admin viewing; admin can manage.
-
-**G) Reading Challenge / Goals**
-
-- User sets annual goal: e.g., “Read 50 books in 2026”.
-- Track goal completion with circular progress.
+- **Node.js + Express**
+- **TypeScript**
+- **MongoDB + Mongoose**
+- **Auth**: JWT (access + refresh) + bcrypt
+- **Validation**: Zod / Joi
+- **Uploads**: Cloudinary (recommended) or local
 
 ---
 
-###  Admin Features
+## 🔐 Authentication & Authorization
 
-**Admin Dashboard**
+### Registration
+**Inputs**: `name`, `email (unique)`, `photo (optional upload)`, `password`
 
-- Overview cards:
-  - total users
-  - total books
-  - pending reviews
-- Charts (Chart.js/Recharts):
-  - books per genre
-  - monthly books read (aggregate)
-  - pages over time (optional)
+**Rules**
+- Duplicate email blocked
+- Password must be strong (min length + complexity)
+- Password stored as hash (bcrypt)
 
-**Manage Books**
+### Login
+**Inputs**: `email`, `password`
 
-- CRUD:
-  - Create: title, author, genre(select existing), description, cover upload → store URL
-  - Read: table/list with thumbnails + actions
-  - Update: all fields editable
-  - Delete: confirmation modal
+**Flow**
+- Verify credentials
+- Issue JWT token(s)
 
-**Manage Genres**
-
-- Add/edit genres.
-- Books must reference a genre.
-
-**Manage Users**
-
-- View users list.
-- Change roles: Admin ↔ Normal User.
-
-**Moderate Reviews**
-
-- Pending reviews list.
-- Approve or delete.
-
-**Manage Tutorials**
-
-- Add/remove YouTube links.
-- Validate URL and store `videoId`.
+### Route Protection
+- Every non-auth endpoint requires a valid token
+- Role-based access:
+  - **Admin-only**: manage books/genres/users/reviews/tutorials
+  - **User/Admin**: library, stats, browse, tutorials (read)
 
 ---
 
-##  Recommendation System (Simple but Explainable)
+## 📁 Folder Structure (Modular MVC)
 
-###  Inputs
+```bash
+src/
+  app.ts
+  server.ts
 
-- **User’s Read shelf** genres frequency.
-- **User’s average ratings** by genre and overall.
-- **Community signals**:
-  - Books with high approved review ratings
-  - Most shelved books
+  config/
+    index.ts
 
-###  Algorithm (Practical Approach)
+  middlewares/
+    auth.middleware.ts
+    requireRole.middleware.ts
+    validateRequest.middleware.ts
+    globalErrorHandler.ts
+    notFound.ts
 
-1. Compute top genres from user’s **Read** shelf.
-2. Create candidate pool:
-   - Books in top genres not already in user shelves.
-   - Add popular books by community rating & most shelved.
-3.
-   ## Score candidates:
-   - genre match weight
-   -
-     - community average rating
-   -
-     - approved reviews count/quality
-4. Pick 12–18 results.
+  modules/
+    auth/
+      auth.controller.ts
+      auth.service.ts
+      auth.route.ts
+      auth.validation.ts
 
-###  Fallback Rule
+    user/
+      user.model.ts
+      user.interface.ts
+      user.controller.ts
+      user.service.ts
+      user.route.ts
+      user.validation.ts
 
-- If user has **< 3** books in Read:
-  - Show a mix of popular + random + trending.
+    genre/
+      genre.model.ts
+      genre.interface.ts
+      genre.controller.ts
+      genre.service.ts
+      genre.route.ts
+      genre.validation.ts
 
-###  “Why this book?” Tooltip
+    book/
+      book.model.ts
+      book.interface.ts
+      book.controller.ts
+      book.service.ts
+      book.route.ts
+      book.validation.ts
 
-- Store a short explanation string per recommendation, e.g.
-  - “Matches your Mystery preference (4 books read) + high-rated reviews.”
+    review/
+      review.model.ts
+      review.interface.ts
+      review.controller.ts
+      review.service.ts
+      review.route.ts
+      review.validation.ts
+
+    tutorial/
+      tutorial.model.ts
+      tutorial.interface.ts
+      tutorial.controller.ts
+      tutorial.service.ts
+      tutorial.route.ts
+      tutorial.validation.ts
+
+    userLibrary/
+      userLibrary.model.ts
+      userLibrary.interface.ts
+      userLibrary.controller.ts
+      userLibrary.service.ts
+      userLibrary.route.ts
+      userLibrary.validation.ts
+
+    readingGoal/
+      readingGoal.model.ts
+      readingGoal.interface.ts
+      readingGoal.controller.ts
+      readingGoal.service.ts
+      readingGoal.route.ts
+      readingGoal.validation.ts
+
+    stats/
+      stats.controller.ts
+      stats.service.ts
+      stats.route.ts
+
+    recommendation/
+      recommendation.controller.ts
+      recommendation.service.ts
+      recommendation.route.ts
+```
 
 ---
 
+## 🗃️ Database Schema (MongoDB)
 
-
-##  Technical Architecture
-
-## Backend (Node.js + Express + MongoDB)
-
-**Core stack**
-
-- Node.js + Express
-- TypeScript
-- MongoDB + Mongoose
-- Auth: JWT access + refresh tokens, bcrypt password hash
-- Validation: Zod/Joi
-- Uploads: Cloudinary (recommended) or local
-
-### Backend Modules (Modular MVC)
-
-- `auth` (register/login/refresh/logout)
-- `user` (profile, role update by admin)
-- `book` (CRUD)
-- `genre` (CRUD)
-- `review` (create pending, approve/delete)
-- `tutorial` (CRUD)
-- `library` (shelves, progress updates)
-- `stats` (dashboard + analytics)
-- (optional) `recommendation` (computed endpoint)
-
----
-
-##  Data Model / Database Schema (MongoDB)
-
-###  User
-
+### User
 - `_id`
 - `name`
 - `email` (unique)
@@ -230,27 +159,24 @@ Core goals:
 - `role`: `Admin | User`
 - `createdAt`, `updatedAt`
 
-###  Genre
-
+### Genre
 - `_id`
 - `name` (unique)
 - `slug` (unique)
 
-###  Book
-
+### Book
 - `_id`
 - `title`
 - `author`
 - `genreId` (ref Genre)
 - `description`
 - `coverImageUrl`
-- `totalPages` (optional but helpful for progress)
+- `totalPages` (optional but helpful)
 - `avgRating` (derived)
 - `approvedReviewCount` (derived)
 - `shelvedCount` (derived)
 
-###  Review
-
+### Review
 - `_id`
 - `bookId` (ref Book)
 - `userId` (ref User)
@@ -259,25 +185,22 @@ Core goals:
 - `status`: `pending | approved`
 - `createdAt`
 
-###  LibraryItem (User Shelves)
-
+### LibraryItem (User Shelves)
 - `_id`
 - `userId` (ref User)
 - `bookId` (ref Book)
 - `shelf`: `want | reading | read`
 - `progressPercent` OR `pagesRead`
 - `startedAt`, `finishedAt`
-- Unique index: `(userId, bookId)` to prevent duplicates
+- Unique index: `(userId, bookId)`
 
-###  ReadingGoal
-
+### ReadingGoal
 - `_id`
 - `userId`
 - `year` (e.g., 2026)
 - `goalBooks` (e.g., 50)
 
-###  Tutorial
-
+### Tutorial
 - `_id`
 - `title`
 - `youtubeUrl`
@@ -286,20 +209,16 @@ Core goals:
 
 ---
 
-##  API Design (Sample Endpoints)
+## 🌐 Base URLs
 
-Production Base URL:
-- `https://bookreading-five.vercel.app/api/v1`
-
-Local Base URL:
-- `http://localhost:5000/api/v1`
+- **Production**: `https://bookreading-five.vercel.app/api/v1`
+- **Local**: `http://localhost:5000/api/v1`
 
 ---
 
-## Authentication
-Most endpoints require a JWT access token.
+## 🧾 Authorization Header
 
-Add this header:
+Most endpoints require:
 
 ```http
 Authorization: Bearer <token>
@@ -308,14 +227,13 @@ Content-Type: application/json
 
 ---
 
-## API Endpoints
+## 🧩 API Endpoints
 
-### User (`/user`)
+### Auth / User (`/user`)
 
 #### Register (Public)
 - **POST** `/user/register`
 
-**Body**
 ```json
 {
   "name": "Foysal",
@@ -327,7 +245,6 @@ Content-Type: application/json
 #### Login (Public)
 - **POST** `/user/login`
 
-**Body**
 ```json
 {
   "email": "foysal@gmail.com",
@@ -335,7 +252,7 @@ Content-Type: application/json
 }
 ```
 
-**Response (example)**
+**Response**
 ```json
 {
   "success": true,
@@ -360,7 +277,6 @@ Content-Type: application/json
 #### Update User Role (Admin)
 - **PATCH** `/user/:id`
 
-**Body**
 ```json
 { "role": "Admin" }
 ```
@@ -387,13 +303,12 @@ Content-Type: application/json
 #### Create Book (Admin)
 - **POST** `/book`
 
-**Body (example)**
 ```json
 {
   "title": "Atomic Habits",
   "author": "James Clear",
   "coverImageUrl": "https://...",
-  "genre": "_toggle_with_your_genre_id_or_slug_",
+  "genre": "GENRE_ID",
   "description": "..."
 }
 ```
@@ -401,7 +316,6 @@ Content-Type: application/json
 #### Update Book (Admin)
 - **PATCH** `/book/:id`
 
-**Body (example)**
 ```json
 { "title": "Atomic Habits (Updated)" }
 ```
@@ -419,7 +333,6 @@ Content-Type: application/json
 #### Create Genre (Admin)
 - **POST** `/genre`
 
-**Body**
 ```json
 { "name": "Fiction" }
 ```
@@ -427,7 +340,6 @@ Content-Type: application/json
 #### Update Genre (Admin)
 - **PATCH** `/genre/:id`
 
-**Body**
 ```json
 { "name": "Sci-Fi" }
 ```
@@ -442,7 +354,6 @@ Content-Type: application/json
 #### Create Review (Auth)
 - **POST** `/review`
 
-**Body (example)**
 ```json
 {
   "book": "BOOK_ID",
@@ -464,7 +375,6 @@ Content-Type: application/json
 #### Add to My Library (Auth)
 - **POST** `/user-library`
 
-**Body (example)**
 ```json
 {
   "book": "BOOK_ID",
@@ -479,19 +389,18 @@ Content-Type: application/json
 
 ### Tutorial (`/tutorial`)
 
+#### Get All Tutorials (Auth)
+- **GET** `/tutorial`
+
 #### Create Tutorial (Admin)
 - **POST** `/tutorial`
 
-**Body (example)**
 ```json
 {
   "title": "How to build reading habit",
   "content": "..."
 }
 ```
-
-#### Get All Tutorials (Auth)
-- **GET** `/tutorial`
 
 #### Update Tutorial (Admin)
 - **PATCH** `/tutorial/:id`
@@ -506,7 +415,6 @@ Content-Type: application/json
 #### Create Reading Goal (Auth)
 - **POST** `/reading-goal`
 
-**Body (example)**
 ```json
 {
   "period": "monthly",
@@ -516,32 +424,24 @@ Content-Type: application/json
 }
 ```
 
-#### Get My Goals (Auth, Admin/User)
+#### Get My Goals (Auth)
 - **GET** `/reading-goal/user/:userId`
 
-#### Get My Active Goal (Auth, Admin/User)
+#### Get My Active Goal (Auth)
 - **GET** `/reading-goal/active/:userId`
 
-#### Get Active Goal Progress (Auth, Admin/User)
+#### Get Active Goal Progress (Auth)
 - **GET** `/reading-goal/active/:userId/progress`
 
 #### Update Goal (Auth)
 - **PATCH** `/reading-goal/:id`
-
-**Body (example)**
-```json
-{
-  "targetBook": 10,
-  "isActive": true
-}
-```
 
 #### Delete Goal (Auth)
 - **DELETE** `/reading-goal/:id`
 
 ---
 
-## Quick Endpoint Table
+## ✅ Quick Endpoint Table
 
 | Module | Method | Endpoint | Access |
 |---|---|---|---|
@@ -578,9 +478,68 @@ Content-Type: application/json
 
 ---
 
-# Postman Collection JSON
+## 🧠 Recommendation System (Simple + Explainable)
 
-> Copy-paste into a file like: `BookWorm.postman_collection.json` and Import in Postman.
+**Signals**
+- User’s most-read genres
+- User’s ratings pattern
+- Community rating + approved review quality
+- Most-shelved books
+
+**Approach**
+1. Find user’s top genres from `Read` shelf.
+2. Build candidate pool:
+   - Books in top genres **not already** in user shelves.
+   - Add popular books by rating + shelved count.
+3. Score candidates:
+   - Genre match weight
+   - Community average rating
+   - Approved review count/quality
+4. Return 12–18 books.
+
+**Fallback**
+- If user has < 3 books in `Read`, show popular + random + trending mix.
+
+**“Why this book?” tooltip**
+- Store a short explanation string, e.g.
+  - `Matches your Mystery preference (4 books read) + high-rated reviews.`
+
+---
+
+## 🧯 Error Handling & Edge Cases
+
+### Auth
+- Wrong credentials
+- Token expired → refresh flow
+- Forbidden role access
+
+### Books
+- Invalid ID
+- Genre not found
+- Missing cover image
+
+### Reviews
+- Optional: block multiple reviews per user per book
+- Pending reviews hidden from public/normal lists
+
+### Library
+- Prevent duplicates (unique index)
+- Progress cannot exceed 100% / totalPages
+- If shelf becomes `read` → auto set progress 100%
+
+### Uploads
+- Validate file type + size
+- Cloud upload failure fallback
+
+---
+
+## 📦 Postman Collection
+
+Copy-paste into a file:
+
+`BookWorm.postman_collection.json`
+
+Then import into Postman.
 
 ```json
 {
@@ -645,9 +604,7 @@ Content-Type: application/json
           "name": "Get All Users (Admin)",
           "request": {
             "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": { "raw": "{{baseUrl}}/user", "host": ["{{baseUrl}}"], "path": ["user"] }
           }
         },
@@ -655,9 +612,7 @@ Content-Type: application/json
           "name": "Get Single User (Self/Admin)",
           "request": {
             "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": { "raw": "{{baseUrl}}/user/{{userId}}", "host": ["{{baseUrl}}"], "path": ["user", "{{userId}}"] }
           }
         },
@@ -677,9 +632,7 @@ Content-Type: application/json
           "name": "Delete User (Admin)",
           "request": {
             "method": "DELETE",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": { "raw": "{{baseUrl}}/user/{{userId}}", "host": ["{{baseUrl}}"], "path": ["user", "{{userId}}"] }
           }
         }
@@ -965,36 +918,30 @@ Content-Type: application/json
 }
 ```
 
+---
 
-##  Error Handling & Edge Cases
+## 🧪 Suggested Testing Flow (Postman)
 
-**Auth**
-
-- Wrong credentials
-- Token expired (refresh flow)
-- Forbidden role access
-
-**Books**
-
-- Invalid book ID
-- Genre not found
-- Empty cover image
-
-**Reviews**
-
-- Prevent multiple reviews per user per book (optional rule)
-- Pending reviews hidden from public
-
-**Library**
-
-- Prevent duplicate shelf items
-- Progress can’t exceed 100% or totalPages
-- If shelf becomes `read`, auto set progress 100%
-
-**Uploads**
-
-- Validate file size + type
-- Cloud upload failure fallback
+1) Register → Login → save token
+2) Create Genre (Admin)
+3) Create Book (Admin)
+4) User adds book to Library
+5) User posts Review → Admin approves
+6) Fetch Book details + reviews
+7) Create Reading Goal → fetch progress
 
 ---
+
+## 📌 Notes / Implementation Tips
+
+- Always store `passwordHash`, never raw password.
+- Use `unique index (userId, bookId)` on LibraryItem.
+- On shelf change to `read`, auto-set progress = 100 and set `finishedAt`.
+- For tutorials: validate URL and store only `youtubeVideoId`.
+
+---
+
+## 📄 License
+
+MIT
 
