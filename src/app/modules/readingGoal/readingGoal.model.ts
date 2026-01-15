@@ -30,4 +30,4 @@ const schema = new Schema<IReadingGoal>(
   }
 );
 schema.index({ user: 1, isActive: 1 });
-export const ReadingFoal = model<IReadingGoal>("ReadingGoal", schema);
+export const ReadingGoal = model<IReadingGoal>("ReadingGoal", schema);
