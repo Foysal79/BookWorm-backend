@@ -33,24 +33,16 @@ router.get(
 router.post(
   "/",
   authMiddleware.auth(),
-  roleBaseMiddleware.requireRole("User"),
   validateRequest(ReadingGoalValidation.createSchema),
   ReadingGoalController.createReadingGoal
 );
-
 router.patch(
   "/:id",
   authMiddleware.auth(),
-  roleBaseMiddleware.requireRole("User"),
   validateRequest(ReadingGoalValidation.updateSchema),
   ReadingGoalController.updateGoal
 );
 
-router.delete(
-  "/:id",
-  authMiddleware.auth(),
-  roleBaseMiddleware.requireRole("User"),
-  ReadingGoalController.deleteGoal
-);
+router.delete("/:id", authMiddleware.auth(), ReadingGoalController.deleteGoal);
 
 export const ReadingGoalRoutes = router;

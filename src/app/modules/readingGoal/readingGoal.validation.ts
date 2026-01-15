@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const createSchema = z.object({
   body: z.object({
-    user: z.string(),
+    user: z.string().optional(),
     period: z.enum(["weekly", "monthly", "yearly"]),
     targetBook: z.number().min(1),
     startDate: z.string().refine((val) => !isNaN(Date.parse(val)), {

@@ -1,12 +1,25 @@
 import { Request, Response } from "express";
 import { ReadingGoalService } from "./readingGoal.service";
 import { ReadingGoalValidation } from "./readingGoal.validation";
+import { AuthRequest } from "../../middlewares/auth.middleware";
 
-const createReadingGoal = async (req: Request, res: Response) => {
+const createReadingGoal = async (req: AuthRequest, res: Response) => {
   try {
-    const parsed = ReadingGoalValidation.createSchema.parse({ body: req.body });
+    const payload = {
+      ...req.body,
+      user: req.user!.userId,
+    };
+
+    const parsed = ReadingGoalValidation.createSchema.parse({
+      body: payload,
+    });
+
     const result = await ReadingGoalService.createReadingGoal(parsed.body);
-    res.status(201).json({ success: true, data: result });
+
+    res.status(201).json({
+      success: true,
+      data: result,
+    });
   } catch (error: any) {
     if (error?.name === "ZodError") {
       return res.status(400).json({
@@ -15,7 +28,10 @@ const createReadingGoal = async (req: Request, res: Response) => {
         errors: error.errors,
       });
     }
-    res.status(400).json({ success: false, message: error.message });
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -52,14 +68,27 @@ const getMyActiveGoalProgress = async (req: Request, res: Response) => {
   }
 };
 
-const updateGoal = async (req: Request, res: Response) => {
+const updateGoal = async (req: AuthRequest, res: Response) => {
   try {
-    const parsed = ReadingGoalValidation.updateSchema.parse({ body: req.body });
+    const payload = {
+      ...req.body,
+      user: req.user!.userId,
+    };
+
+    const parsed = ReadingGoalValidation.updateSchema.parse({ body: payload });
 
     const result = await ReadingGoalService.updateGoal(
-      req.params.id as any,
+      req.params.id as string,
       parsed.body
     );
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Goal not found (or not yours)",
+      });
+    }
+
     res.json({ success: true, data: result });
   } catch (error: any) {
     if (error?.name === "ZodError") {
@@ -73,9 +102,10 @@ const updateGoal = async (req: Request, res: Response) => {
   }
 };
 
-const deleteGoal = async (req: Request, res: Response) => {
+
+const deleteGoal = async (req: AuthRequest, res: Response) => {
   try {
-    const result = await ReadingGoalService.deleteGoal(req.params.id as any);
+    const result = await ReadingGoalService.deleteGoal(req.user!.userId as any);
     res.json({ success: true, data: result });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
